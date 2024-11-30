@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تبدیل فایل‌های Excel به JSON</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* Reset بعضی استایل‌های پیش‌فرض */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* استایل برای بدنه */
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* استایل بخش‌های بارگذاری فایل */
+        .file-upload-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .file-upload-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .file-upload-container h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #34495e;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            color: #34495e;
+            background-color: #ecf0f1;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        /* دکمه تبدیل و دانلود */
+        button {
+            font-family: 'Vazirmatn';
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        /* استایل برای موبایل */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            .file-upload-container {
+                padding: 20px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 dir="rtl">تبدیل فایل Excel به JSON</h2>
+
+    <div class="file-upload-container">
+        <h3>فایل ورودی (Training Data)</h3>
+        <input type="file" id="inputFile" accept=".xlsx">
+    </div>
+
+    <div class="file-upload-container">
+        <h3>فایل تارگت (Targets)</h3>
+        <input type="file" id="targetFile" accept=".xlsx">
+    </div>
+
+    <button onclick="convertToJson()">تبدیل و دانلود</button>
+
+    <script>
+        function convertToJson() {
+            const inputFile = document.getElementById('inputFile').files[0];
+            const targetFile = document.getElementById('targetFile').files[0];
+
+            if (!inputFile || !targetFile) {
+                alert("لطفا هر دو فایل را انتخاب کنید.");
+                return;
+            }
+
+            const reader1 = new FileReader();
+            const reader2 = new FileReader();
+
+            reader1.onload = function (e) {
+                const inputs = XLSX.read(e.target.result, { type: 'binary' });
+                reader2.onload = function (ev) {
+                    const targets = XLSX.read(ev.target.result, { type: 'binary' });
+
+                    const inputData = XLSX.utils.sheet_to_json(inputs.Sheets[inputs.SheetNames[0]], { header: 1 });
+                    const targetData = XLSX.utils.sheet_to_json(targets.Sheets[targets.SheetNames[0]], { header: 1 });
+
+                    const jsonOutput = [];
+                    for (let i = 0; i < inputData[0].length; i++) {  // ستون‌ها
+                        const sample = {
+                            y: targetData.map(row => row[i]), // هر ستون تارگت
+                            data: inputData.map(row => row[i]) // هر ستون ورودی
+                        };
+                        jsonOutput.push(sample);
+                    }
+
+                    downloadJson(JSON.stringify(jsonOutput, null, 2), "output.json");
+                };
+                reader2.readAsBinaryString(targetFile);
+            };
+            reader1.readAsBinaryString(inputFile);
+        }
+
+        function downloadJson(content, fileName) {
+            const blob = new Blob([content], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        }
+    </script>
+
+</body>
+
+</html>

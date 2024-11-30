@@ -1,0 +1,61 @@
+/* Modal base styling */
+.modal {
+    display: none;
+    z-index: 1000;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* width: 400px; */
+    background: linear-gradient(135deg, #FBBF24, #f43f5e);
+    /* Gradient background: Yellow to Red */
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.5s ease;
+}
+
+/* Modal content */
+.modal-content {
+    padding: 25px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 19px;
+}
+
+/* Hidden class */
+.hidden {
+    display: none;
+}
+
+/* Animation for showing the modal */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* Animation for closing the modal */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+}
+
+@media (prefers-color-scheme: light){
+    #btnContainer{
+        background-color: white;
+    }
+}
